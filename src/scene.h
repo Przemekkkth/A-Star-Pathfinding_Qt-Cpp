@@ -21,13 +21,15 @@ private:
     void OnUpdateScene();
     bool solveAStar();
     void drawConnections(int nodeSize);
+    void drawNodes(int nodeSize, int nodeBorder);
+    void drawPath(int nodeSize);
 
-    const QSize UNIT_SIZE   = QSize(6  , 6  );
-    const QSize WINDOW_SIZE = QSize(160, 160);
+    const QSize UNIT_SIZE   = QSize(5  , 5  );
+    const QSize WINDOW_SIZE = QSize(135, 135);
     const QSize SCENE_SIZE  = QSize(UNIT_SIZE.width()*WINDOW_SIZE.width(), UNIT_SIZE.height()*WINDOW_SIZE.height());
 
-    int nMapWidth = 16;
-    int nMapHeight = 16;
+    int nMapWidth = 15;
+    int nMapHeight = 15;
 
     int m_mousePosX = 0;
     int m_mousePosY = 0;

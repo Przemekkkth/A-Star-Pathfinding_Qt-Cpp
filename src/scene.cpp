@@ -4,11 +4,13 @@
 #include <QKeyEvent>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsLineItem>
+#include <QGraphicsRectItem>
 
 Scene::Scene(QObject *parent)
     : QGraphicsScene(parent)
 {
     setSceneRect(0,0, SCENE_SIZE.width(), SCENE_SIZE.height());
+    setBackgroundBrush(QBrush(QColor(Qt::black)));
     OnCreateScene();
     connect(&m_timer, &QTimer::timeout, this, &Scene::loop);
     m_timer.start(m_loopTime);
@@ -60,7 +62,7 @@ void Scene::OnCreateScene()
 void Scene::OnUpdateScene()
 {
     int nNodeSize   = 9 * UNIT_SIZE.width();
-    int nNodeBorder = 9 * UNIT_SIZE.width();
+    int nNodeBorder = 2 * UNIT_SIZE.width();
     int nSelectedNodeX = m_mousePosX / nNodeSize;
     int nSelectedNodeY = m_mousePosY / nNodeSize;
     if(m_mouseReleased)
@@ -90,6 +92,8 @@ void Scene::OnUpdateScene()
     ////drawing
     clear();
     drawConnections(nNodeSize);
+    drawNodes(nNodeSize, nNodeBorder);
+    drawPath(nNodeSize);
 }
 
 bool Scene::solveAStar()
@@ -179,6 +183,76 @@ void Scene::drawConnections(int nodeSize)
     }
 }
 
+void Scene::drawNodes(int nodeSize, int nodeBorder)
+{
+    for (int x = 0; x < nMapWidth; x++)
+    {
+        for (int y = 0; y < nMapHeight; y++)
+        {
+            QGraphicsRectItem* rItem = new QGraphicsRectItem();
+            rItem->setPos(x*nodeSize + nodeBorder, y*nodeSize + nodeBorder);
+            //rItem->setRect(0, 0, ((x + 1)*nodeSize - nodeBorder) - (x*nodeSize + nodeBorder),
+            //               ((y + 1)*nodeSize - nodeBorder) - (y*nodeSize + nodeBorder));
+            rItem->setRect(0,0, nodeSize - 2*nodeBorder, nodeSize - 2*nodeBorder);
+            rItem->setBrush(QBrush(QColor(nodes[y * nMapWidth + x].bObstacle ? Qt::white : Qt::blue)));
+            rItem->setPen(QPen(QColor(nodes[y * nMapWidth + x].bObstacle ? Qt::white : Qt::blue)));
+            addItem(rItem);
+
+            if (nodes[y * nMapWidth + x].bVisited)
+            {
+                QGraphicsRectItem* vItem = new QGraphicsRectItem();
+                vItem->setPos(x*nodeSize + nodeBorder, y*nodeSize + nodeBorder);
+                vItem->setRect(0,0, nodeSize - 2*nodeBorder, nodeSize - 2*nodeBorder);
+                vItem->setBrush(QBrush(QColor(Qt::darkBlue)));
+                vItem->setPen(QPen(QColor(Qt::darkBlue)));
+                addItem(vItem);
+            }
+            if(&nodes[y * nMapWidth + x] == nodeStart)
+            {
+                QGraphicsRectItem* sItem = new QGraphicsRectItem();
+                sItem->setPos(x*nodeSize + nodeBorder, y*nodeSize + nodeBorder);
+                sItem->setRect(0,0, nodeSize - 2*nodeBorder, nodeSize - 2*nodeBorder);
+                sItem->setBrush(QBrush(QColor(Qt::darkGreen)));
+                sItem->setPen(QPen(QColor(Qt::darkGreen)));
+                addItem(sItem);
+            }
+            if(&nodes[y * nMapWidth + x] == nodeEnd)
+            {
+                QGraphicsRectItem* eItem = new QGraphicsRectItem();
+                eItem->setPos(x*nodeSize + nodeBorder, y*nodeSize + nodeBorder);
+                eItem->setRect(0,0, nodeSize - 2*nodeBorder, nodeSize - 2*nodeBorder);
+                eItem->setBrush(QBrush(QColor(Qt::darkRed)));
+                eItem->setPen(QPen(QColor(Qt::darkRed)));
+                addItem(eItem);
+            }
+
+
+        }
+    }
+}
+
+void Scene::drawPath(int nodeSize)
+{
+    if (nodeEnd != nullptr)
+    {
+        Node *p = nodeEnd;
+        while (p->parent != nullptr)
+        {
+            QGraphicsLineItem* lineItem = new QGraphicsLineItem();
+            QPen pen((QColor(Qt::yellow)));
+            pen.setWidth(UNIT_SIZE.width());
+            pen.setBrush(QBrush(QColor(Qt::yellow)));
+            lineItem->setPen(pen);
+            lineItem->setLine(p->x*nodeSize + nodeSize / 2, p->y*nodeSize + nodeSize / 2,
+                p->parent->x*nodeSize + nodeSize / 2, p->parent->y*nodeSize + nodeSize / 2);
+            addItem(lineItem);
+
+            // Set next node to this node's parent
+            p = p->parent;
+        }
+    }
+}
+
 void Scene::loop()
 {
     m_deltaTime = m_elapsedTimer.elapsed();
@@ -230,8 +304,6 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     m_mousePosX = event->scenePos().x();
     m_mousePosY = event->scenePos().y();
     m_mouseReleased = true;
-    qDebug() << "pos " << m_mousePosX << " " << m_mousePosY;
-
 
     QGraphicsScene::mouseReleaseEvent(event);
 }
