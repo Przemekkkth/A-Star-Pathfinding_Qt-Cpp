@@ -5,6 +5,8 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsLineItem>
 #include <QGraphicsRectItem>
+#include <QDir>
+#include <QPainter>
 
 Scene::Scene(QObject *parent)
     : QGraphicsScene(parent)
@@ -36,6 +38,7 @@ void Scene::OnCreateScene()
     {
         for(int y = 0; y < nMapHeight; ++y)
         {
+            //init nodes
             if(y>0)
             {
                 nodes[y*nMapWidth + x].vecNeighbours.push_back(&nodes[(y - 1) * nMapWidth + (x + 0)]);
@@ -253,6 +256,19 @@ void Scene::drawPath(int nodeSize)
     }
 }
 
+void Scene::renderScene()
+{
+    static int index = 0;
+    QString fileName = QDir::currentPath() + QDir::separator() + "screen" + QString::number(index++) + ".png";
+    QRect rect = sceneRect().toAlignedRect();
+    QImage image(rect.size(), QImage::Format_ARGB32);
+    image.fill(Qt::transparent);
+    QPainter painter(&image);
+    render(&painter);
+    image.save(fileName);
+    qDebug() << "saved " << fileName;
+}
+
 void Scene::loop()
 {
     m_deltaTime = m_elapsedTimer.elapsed();
@@ -268,6 +284,14 @@ void Scene::loop()
 
 void Scene::keyPressEvent(QKeyEvent *event)
 {
+    if(!event->isAutoRepeat())
+    {
+        if(event->key() == Qt::Key_Z)
+        {
+            renderScene();
+        }
+    }
+
     if(event->key() == Qt::Key_Shift)
     {
         m_shiftPressed = true;

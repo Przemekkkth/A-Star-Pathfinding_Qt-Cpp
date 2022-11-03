@@ -23,6 +23,7 @@ private:
     void drawConnections(int nodeSize);
     void drawNodes(int nodeSize, int nodeBorder);
     void drawPath(int nodeSize);
+    void renderScene();
 
     const QSize UNIT_SIZE   = QSize(5  , 5  );
     const QSize WINDOW_SIZE = QSize(135, 135);
