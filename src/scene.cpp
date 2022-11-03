@@ -194,8 +194,6 @@ void Scene::drawNodes(int nodeSize, int nodeBorder)
         {
             QGraphicsRectItem* rItem = new QGraphicsRectItem();
             rItem->setPos(x*nodeSize + nodeBorder, y*nodeSize + nodeBorder);
-            //rItem->setRect(0, 0, ((x + 1)*nodeSize - nodeBorder) - (x*nodeSize + nodeBorder),
-            //               ((y + 1)*nodeSize - nodeBorder) - (y*nodeSize + nodeBorder));
             rItem->setRect(0,0, nodeSize - 2*nodeBorder, nodeSize - 2*nodeBorder);
             rItem->setBrush(QBrush(QColor(nodes[y * nMapWidth + x].bObstacle ? Qt::white : Qt::blue)));
             rItem->setPen(QPen(QColor(nodes[y * nMapWidth + x].bObstacle ? Qt::white : Qt::blue)));
